@@ -1,0 +1,13 @@
+{
+  "name": "H5Magen",
+  "version": "0.0.1",
+  "dependencies": {
+	"marked":"",
+	"ncp":"",
+	"async":"",
+	"Handlebars":"",
+	"reader":"",
+	"minimist":"",
+	"line-reader":""
+  }
+}
