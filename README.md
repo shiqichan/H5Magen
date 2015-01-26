@@ -32,7 +32,7 @@ npm install
 命令行，`H5Magen`目录下，执行：
 
 ```
-node h5magen -s examples/firstMagzine
+node h5magen -s examples/firstMagazine
 ```
 
 将根据`firstMagzine`目录的素材生成电子杂志，位置在`examples/firstMagzine/dist`目录下。在浏览器打开`dist`目录下的`index.html`文件，即可看到生成的电子杂志。
