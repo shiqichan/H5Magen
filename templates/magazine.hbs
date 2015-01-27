@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no"/>
+<style type="text/css">
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#iSlider-content {
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+}
+
+
+#iSlider-hidden {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+article {
+    margin-top: 0px;
+    padding: 10px;
+    padding-top: 25px;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+
+    color:rgb(220,220,220); 
+    text-shadow: blue 0 1px 0;
+	background-repeat: no-repeat;
+	background-size:cover;
+	background-position:center;
+}
+
+#iSlider-wrapper {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+.iSlider-show {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background-color: #333;
+}
+
+#iSlider-show ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+#iSlider-show li {
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-box-pack: center;
+    -webkit-box-align: center;
+    list-style: none;
+}
+
+#iSlider-show img{
+	max-width: 96%;
+}
+
+</style>
+</head>
+<body>
+<div id="iSlider-content">
+<div id="iSlider-show" class="iSlider-show"></div>
+</div>
+
+<script type="text/javascript" src="islider.js"></script>
+<script type="text/javascript">
+var domList =
+{{{articles}}}
+;
+
+// initialization
+var islider = new iSlider({
+    data: domList,
+    dom: document.getElementById("iSlider-show"),
+    type:'dom',
+    isVertical:false,
+    animateType:'card',
+    onslideend:function(){
+    }
+});
+
+
+</script>
+</body>
+</html>
