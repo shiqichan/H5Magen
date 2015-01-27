@@ -7,158 +7,94 @@ var marked = require('marked')
 	argv = require('minimist')(process.argv.slice(2));
 
 // 图书类
-var Book=function(dir){
+var Magazine=function(dir){
 	this.dir=dir;
 };
 
 //生成电子书方法
-Book.prototype.generate=function(){
+Magazine.prototype.generate=function(){
 	var self=this;
-	async.series([
-			function(callback){
-				self.frontCover=new Article(self.dir+'/'+'front_cover.md');
-				self.frontCover.parse(callback);
-				console.log('解析封面..OK');
-			},
-			function(callback){
-				self.contentCount=0;
-				self.contentFiles=[];
-				for(var i=1;;i++){
-					var filePath=self.dir+'/'+i+'.md';
-					if (fs.existsSync(filePath)){
-						self.contentFiles.push(filePath);
-						self.contentCount++;
-					}else{
-						break;
-					}
-				}
-				console.log('正文共.. '+self.contentCount+'篇');
-				callback(null);
-			},
-			function(callback){
-				var _callback=callback;
-				self.contentArticles=[];
-				async.each(self.contentFiles, function(filePath,callback){
-					var article=new Article(filePath);
-					article.parse(function(){
-						self.contentArticles.push(article);
-						callback(null);
-					});
-					console.log('解析'+filePath+'..OK');
-				},function(err){
-					_callback(null);
-				});
-			},
-			function(callback){
-				self.backCover=new Article(self.dir+'/'+'back_cover.md');
-				self.backCover.parse(callback);
-				console.log('解析封底..OK');
-			},
-			function(callback){
-				var allAticles=[];
+	
+	// 获取全部数据文件
+	self.dataFiles=[self.dir+'/front_cover.json'];
+	for(var i=1;;i++){
+		var filePath=self.dir+'/'+i+'.json';
+		if (fs.existsSync(filePath)){
+			self.dataFiles.push(filePath);
+		}else{
+			break;
+		}
+	}
+	self.dataFiles.push(self.dir+'/back_cover.json');
+	console.log('生成数据文件列表 .. OK');
 
-				allAticles.push(self.frontCover);
-				self.contentArticles.forEach(function(article){
-					allAticles.push(article);
-				});
-				allAticles.push(self.backCover);
+	self.articles=[];
 
-				var articles=[];
+	async.eachSeries(self.dataFiles,function(filePath,callback){
+		fs.readFile(filePath,'utf8',function(err,data){
+			if(err) return err;
+			var article=new Article(JSON.parse(data));
+			self.articles.push({
+				height:'100%',
+				width:'100%',
+				content:article.html
+			});
+			callback(null);
+		});
+	},function(err){
+		if (err) return err;
+		console.log('加载数据文件.. OK');
 
-				allAticles.forEach(function(article){
-					articles.push({
-						height:'100%',
-						width:'100%',
-						content:article.html
-					});
-				});
-				
-				// 通过hbs模板生成html正文
-				var source=fs.readFileSync('magazine.hbs','utf8');
-				var template = Handlebars.compile(source);
-				var result=template({articles:JSON.stringify(articles)});
+		// 通过hbs模板生成html正文
+		var source=fs.readFileSync('templates/magazine.hbs','utf8');
+		var template = Handlebars.compile(source);
+		var result=template({articles:JSON.stringify(self.articles)});
 
-				// 临时加的方法，递归删除目录文件
-				var deleteFolderRecursive = function(path) {
-				  if( fs.existsSync(path) ) {
-				    fs.readdirSync(path).forEach(function(file,index){
-				      var curPath = path + "/" + file;
-				      if(fs.lstatSync(curPath).isDirectory()) { // recurse
-				        deleteFolderRecursive(curPath);
-				      } else { // delete file
-				        fs.unlinkSync(curPath);
-				      }
-				    });
-				    fs.rmdirSync(path);
-				  }
-				};
+		// 临时加的方法，递归删除目录文件
+		var deleteFolderRecursive = function(path) {
+		  if( fs.existsSync(path) ) {
+		    fs.readdirSync(path).forEach(function(file,index){
+		      var curPath = path + "/" + file;
+		      if(fs.lstatSync(curPath).isDirectory()) { // recurse
+		        deleteFolderRecursive(curPath);
+		      } else { // delete file
+		        fs.unlinkSync(curPath);
+		      }
+		    });
+		    fs.rmdirSync(path);
+		  }
+		};
 
-				// 删除dist目录及其文件
-				var distDir=self.dir+'/dist';
-				deleteFolderRecursive(distDir);
-				// 新建dist目录
-				fs.mkdirSync(distDir);
-				// 新建index.html
-				fs.writeFileSync(distDir+'/index.html',result);
-				// 复制必要的文件
-				fs.createReadStream('islider.js').pipe(fs.createWriteStream(distDir+'/islider.js'));
-				// 复制图片文件目录
-				ncp(self.dir+'/images',distDir+'/images',function(err){
-					if (err) {
-						return console.error(err);
-					}else{
-						console.log('图片文件目录复制..OK');
-					}
-				});
+		// 删除dist目录及其文件
+		var distDir=self.dir+'/dist';
+		deleteFolderRecursive(distDir);
 
-				callback(null);
+		// 新建dist目录
+		fs.mkdirSync(distDir);
+		// 新建index.html
+		fs.writeFileSync(distDir+'/index.html',result);
+		console.log('HTML文件生成.. OK');
+		// 复制必要的文件
+		fs.createReadStream('islider.js').pipe(fs.createWriteStream(distDir+'/islider.js'));
+		// 复制图片文件目录
+		ncp(self.dir+'/images',distDir+'/images',function(err){
+			if (err) {
+				return console.error(err);
+			}else{
+				console.log('图片文件目录复制..OK');
 			}
-		]);
+		});
+
+	});
 };
 
 // 文章类
-var Article=function(filePath){
-	this.markDownFilePath=filePath;
-};
+var Article=function(data){
+	this.data=data;
 
-Article.prototype.parse=function(_callback){
-	var self=this;
-
-	async.series([
-		// 分析控制信息
-		function(callback){
-			self.markDownText='';
-			var target=self;
-			lineReader.eachLine(self.markDownFilePath, function(line, last) {
-				// 获取背景图片url
-				if ((/^background_img:/).test(line)){
-					target.backgroundImageUrl=line.substr('background_img:'.length,line.length);
-				}
-				// 获取布局类型
-				if ((/^layout:/).test(line)){
-					target.layout=line.substr('layout:'.length,line.length);
-				}
-
-				target.markDownText+=line;
-				if(!last){
-					target.markDownText+='\n';
-				}else{
-					callback(null);
-				}
-			});
-		},
-		// 分析MarkDown，生成html片段
-		function(callback){
-			self.html='<article style="background-image: url('+self.backgroundImageUrl+')">';
-			self.html+=marked(self.markDownText);
-			self.html+='</article>'
-			callback(null);
-		},
-		function(callback){
-			callback(null);
-			_callback(null);
-		}
-		]);
+	var source=fs.readFileSync('templates/'+this.data.layout+'.hbs','utf8');
+	var template = Handlebars.compile(source);
+	this.html=template(this.data);
 };
 
 if (!argv.s){
@@ -166,8 +102,8 @@ if (!argv.s){
 	return;
 }
 
-var book=new Book(argv.s);
-book.generate();
+var magazine=new Magazine(argv.s);
+magazine.generate();
 
 
 
