@@ -41,9 +41,33 @@ node h5magen -s examples/firstMagazine
 
 #### 基本思路
 
-电子杂志使用`MarkDown`语法，有关语法见：[MarkDown 语法说明 (简体中文版)](http://wowubuntu.com/markdown/)
+电子杂志，分为：
 
-本项目程序，解析MarkDown语法内容，生成HTML，并添加渲染CSS和相关的JavaScript。
+1. 数据
+2. 模板
+
+其中，数据部分，是*编辑*制作的，模板，是开发者根据制作要求提前做好的。
+
+比如，数据，见[1.json](https://github.com/shiqichan/H5Magen/blob/master/examples/firstMagazine/1.json)：
+
+```
+{
+	"layout":"simple/article_1",
+	"backgroundImageUrl":"images/008.jpg",
+	"title":"猫",
+	"subtitle":"小型猫科动物也是杀手",
+	"content":"在美国，家猫每年导致高达37亿只本土鸟类死亡。"
+}
+```
+模板部分，见[article_1.hbs](https://github.com/shiqichan/H5Magen/blob/master/templates/simple/article_1.hbs)
+
+```
+<article style="background-image: url({{{backgroundImageUrl}}})">
+<h1>{{{title}}}</h1>
+<h2>{{{subtitle}}}</h2>
+<p>{{{content}}}</p>
+</article>
+```
 
 #### 写法示例
 
