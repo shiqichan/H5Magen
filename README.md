@@ -1,6 +1,10 @@
 # H5Magen
 HTML5电子杂志生成器。
 
+一个生成好的示例：
+
+![](http://shiqichan.qiniudn.com/simple.demo.h5magen.png)
+
 ## 如何安装
 
 ### nodejs/npm
