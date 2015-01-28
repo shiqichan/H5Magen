@@ -3,7 +3,7 @@ HTML5电子杂志生成器。
 
 一个生成好的示例：
 
-![](http://shiqichan.qiniudn.com/simple.demo.h5magen.png)
+![](http://shiqichan.qiniudn.com/h5magen.simple.png)
 
 ## 如何安装
 
